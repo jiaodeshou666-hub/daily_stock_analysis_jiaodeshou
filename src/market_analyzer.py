@@ -573,7 +573,7 @@ class MarketAnalyzer:
 
         compare_text = self._build_volume_amount_compare_text(overview)
 
-                # 处理成交额显示
+        # 处理成交额显示
         if overview.total_amount == 0:
             amount_text = "暂无数据（接口异常或未获取到数据）"
         else:
@@ -702,8 +702,10 @@ class MarketAnalyzer:
 | 下跌家数 | {overview.down_count} |
 | 涨停 | {overview.limit_up_count} |
 | 跌停 | {overview.limit_down_count} |
-| 两市成交额 | {overview.total_amount:.0f}亿 |
-| 北向资金 | {overview.north_flow:+.2f}亿 |
+| 两市成交额 | {amount_text} |
+| 北向资金 | {north_text} |
+
+
 
 ### 四、板块表现
 - **领涨**: {top_text}
