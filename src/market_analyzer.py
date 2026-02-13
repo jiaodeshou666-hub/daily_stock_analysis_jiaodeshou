@@ -226,8 +226,8 @@ class MarketAnalyzer:
         # 3. 获取板块涨跌榜
         self._get_sector_rankings(overview)
         
-        # 4. 获取北向资金（可选）
-        # self._get_north_flow(overview)
+        # 4. 获取北向资金
+        self._get_north_flow(overview)
         
         return overview
 
@@ -357,122 +357,117 @@ class MarketAnalyzer:
         try:
             logger.info("[大盘] 获取市场涨跌统计...")
 
-            
-            # 获取全部A股实时行情
-            source = "akshare"
-
-
-            df = self._call_akshare_with_retry(ak.stock_zh_a_spot_em, "A股实时行情", attempts=2)
-            # akshare 失败/为空 -> tushare 兜底
-            if df is None or df.empty:
-                logger.warning("[大盘] akshare 失败/为空，尝试使用 Tushare...")
-            
-                token = os.getenv("TUSHARE_TOKEN")
-                if not token:
-                    logger.error("[大盘] 未配置 TUSHARE_TOKEN")
-                    return
-            
-                ts.set_token(token)
-                pro = ts.pro_api()
-                today = overview.date.replace("-", "")
-            
-                try:
-                    df = pro.daily(trade_date=today)
-                    source = "tushare"
-                    
-                    if df is None or df.empty:
-                        logger.error("[大盘] Tushare daily 为空，无法统计全市场数据")
-                        return
-                    
-                    logger.info(f"[大盘] Tushare daily 获取成功: rows={len(df)}")
-
-                    
-                    # === tushare 字段统计 ===
-                    df["pct_chg"] = pd.to_numeric(df["pct_chg"], errors="coerce")
-                    df["vol"] = pd.to_numeric(df["vol"], errors="coerce")
-                    df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
-                    
-                    overview.up_count = int((df["pct_chg"] > 0).sum())
-                    overview.down_count = int((df["pct_chg"] < 0).sum())
-                    overview.flat_count = int((df["pct_chg"] == 0).sum())
-                    
-                    overview.limit_up_count = int((df["pct_chg"] >= 9.9).sum())
-                    overview.limit_down_count = int((df["pct_chg"] <= -9.9).sum())
-                    
-                    overview.total_volume = float(df["vol"].sum())
-                    overview.total_amount = float(df["amount"].sum()) / 1e5   # 千元 -> 亿元 ⚠别忘了单位转换
-                    
-                    logger.info(
-                        f"[大盘] Tushare统计成功: 涨{overview.up_count} "
-                        f"跌{overview.down_count} 成交额≈{overview.total_amount:.0f}亿"
-                    )
-                    
-                    return   # 👈 必须在这里
-
-
-                
-                except Exception as e:
-                    logger.error(f"[大盘] Tushare 获取失败: {e}")
-                    return
-
-            
-            logger.info(f"[大盘] 市场统计数据源: {source}, rows={len(df)}, columns={list(df.columns)[:15]}")
-            
-            logger.info(f"[大盘] A股实时行情行列: {df.shape}, columns={list(df.columns)[:15]}")
-
+            source = None
+            df = self._call_akshare_with_retry(ak.stock_zh_a_spot_em, "A股实时行情(Akshare)", attempts=2)
 
             if df is not None and not df.empty:
-                # 涨跌统计
-                change_col = '涨跌幅'
-                if change_col in df.columns:
-                    df[change_col] = pd.to_numeric(df[change_col], errors='coerce')
-                    overview.up_count = len(df[df[change_col] > 0])
-                    overview.down_count = len(df[df[change_col] < 0])
-                    overview.flat_count = len(df[df[change_col] == 0])
-                    
-                    # 涨停跌停统计（涨跌幅 >= 9.9% 或 <= -9.9%）
-                    overview.limit_up_count = len(df[df[change_col] >= 9.9])
-                    overview.limit_down_count = len(df[df[change_col] <= -9.9])
-                
-                # 兼容不同版本/接口的列名
-                amount_candidates = ["成交额", "成交额(元)", "成交额（元）", "成交额(万元)", "成交额（万元）"]
-                volume_candidates = ["成交量", "成交量(手)", "成交量（手）", "成交量(股)", "成交量（股）"]
-                
-                amount_col = next((c for c in amount_candidates if c in df.columns), None)
-                volume_col = next((c for c in volume_candidates if c in df.columns), None)
-                
-                # 两市成交额
-                if amount_col:
-                    df[amount_col] = pd.to_numeric(df[amount_col], errors="coerce")
-                    total_amount_raw = df[amount_col].sum()
-                
-                    # 单位修正：如果是“万元”，转成“元”
-                    if "万" in amount_col:
-                        total_amount_raw = total_amount_raw * 1e4
-                
-                    overview.total_amount = total_amount_raw / 1e8  # 元 -> 亿元
-                else:
-                    logger.warning(f"[大盘] 未找到成交额列，现有列: {list(df.columns)[:30]}")
-                
-                # 两市成交量
-                if volume_col:
-                    df[volume_col] = pd.to_numeric(df[volume_col], errors="coerce")
-                    overview.total_volume = df[volume_col].sum()
-                else:
-                    logger.warning(f"[大盘] 未找到成交量列，现有列: {list(df.columns)[:30]}")
+                source = "akshare"
+            else:
+                logger.warning("[大盘] Akshare 实时全量失败/为空，尝试 efinance...")
+                try:
+                    import efinance as ef
+                    df = self._call_akshare_with_retry(
+                        lambda: ef.stock.get_realtime_quotes(),
+                        "A股实时行情(Efinance)",
+                        attempts=2,
+                    )
+                    if df is not None and not df.empty:
+                        source = "efinance"
+                except Exception as e:
+                    logger.warning(f"[大盘] efinance 导入或调用失败: {e}")
 
-
-                
-                logger.info(f"[大盘] 涨:{overview.up_count} 跌:{overview.down_count} 平:{overview.flat_count} "
-                          f"涨停:{overview.limit_up_count} 跌停:{overview.limit_down_count} "
-                          f"成交额:{overview.total_amount:.0f}亿")
-
+            if df is not None and not df.empty:
+                logger.info(f"[大盘] 市场统计数据源: {source}, rows={len(df)}, columns={list(df.columns)[:15]}")
+                self._apply_spot_statistics_from_df(overview, df)
+                logger.info(
+                    f"[大盘] 涨:{overview.up_count} 跌:{overview.down_count} 平:{overview.flat_count} "
+                    f"涨停:{overview.limit_up_count} 跌停:{overview.limit_down_count} "
+                    f"成交额:{overview.total_amount:.0f}亿"
+                )
                 logger.info(f"[大盘] 成交量合计: {overview.total_volume:.0f} (原始单位) | 成交额: {overview.total_amount:.0f}亿")
+                return
 
-                
+            logger.warning("[大盘] Akshare + efinance 均失败，尝试使用 Tushare...")
+            token = os.getenv("TUSHARE_TOKEN")
+            if not token:
+                logger.error("[大盘] 未配置 TUSHARE_TOKEN，无法继续兜底")
+                return
+
+            ts.set_token(token)
+            pro = ts.pro_api()
+            today = overview.date.replace("-", "")
+
+            try:
+                df = pro.daily(trade_date=today)
+                if df is None or df.empty:
+                    logger.error("[大盘] Tushare daily 为空，无法统计全市场数据")
+                    return
+
+                logger.info(f"[大盘] Tushare daily 获取成功: rows={len(df)}")
+                df["pct_chg"] = pd.to_numeric(df["pct_chg"], errors="coerce")
+                df["vol"] = pd.to_numeric(df["vol"], errors="coerce")
+                df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+
+                overview.up_count = int((df["pct_chg"] > 0).sum())
+                overview.down_count = int((df["pct_chg"] < 0).sum())
+                overview.flat_count = int((df["pct_chg"] == 0).sum())
+                overview.limit_up_count = int((df["pct_chg"] >= 9.9).sum())
+                overview.limit_down_count = int((df["pct_chg"] <= -9.9).sum())
+                overview.total_volume = float(df["vol"].sum())
+                overview.total_amount = float(df["amount"].sum()) / 1e5
+
+                logger.info(
+                    f"[大盘] Tushare统计成功: 涨{overview.up_count} "
+                    f"跌{overview.down_count} 成交额≈{overview.total_amount:.0f}亿"
+                )
+            except Exception as e:
+                logger.error(f"[大盘] Tushare 获取失败: {e}")
+
         except Exception as e:
             logger.error(f"[大盘] 获取涨跌统计失败: {e}")
-    
+
+    def _apply_spot_statistics_from_df(self, overview: MarketOverview, df: pd.DataFrame) -> None:
+        """从全市场实时行情 DataFrame 中提取涨跌统计与成交数据。"""
+        if df is None or df.empty:
+            return
+
+        change_candidates = ["涨跌幅", "涨跌幅(%)", "涨跌幅（%）", "pct_chg"]
+        amount_candidates = [
+            "成交额", "成交额(元)", "成交额（元）", "成交额(万元)", "成交额（万元）", "amount"
+        ]
+        volume_candidates = [
+            "成交量", "成交量(手)", "成交量（手）", "成交量(股)", "成交量（股）", "volume"
+        ]
+
+        change_col = next((c for c in change_candidates if c in df.columns), None)
+        amount_col = next((c for c in amount_candidates if c in df.columns), None)
+        volume_col = next((c for c in volume_candidates if c in df.columns), None)
+
+        if change_col:
+            df[change_col] = pd.to_numeric(df[change_col], errors='coerce')
+            overview.up_count = int((df[change_col] > 0).sum())
+            overview.down_count = int((df[change_col] < 0).sum())
+            overview.flat_count = int((df[change_col] == 0).sum())
+            overview.limit_up_count = int((df[change_col] >= 9.9).sum())
+            overview.limit_down_count = int((df[change_col] <= -9.9).sum())
+        else:
+            logger.warning(f"[大盘] 未找到涨跌幅列，现有列: {list(df.columns)[:30]}")
+
+        if amount_col:
+            df[amount_col] = pd.to_numeric(df[amount_col], errors="coerce")
+            total_amount_raw = float(df[amount_col].sum())
+            if "万" in amount_col:
+                total_amount_raw *= 1e4
+            overview.total_amount = total_amount_raw / 1e8
+        else:
+            logger.warning(f"[大盘] 未找到成交额列，现有列: {list(df.columns)[:30]}")
+
+        if volume_col:
+            df[volume_col] = pd.to_numeric(df[volume_col], errors="coerce")
+            overview.total_volume = float(df[volume_col].sum())
+        else:
+            logger.warning(f"[大盘] 未找到成交量列，现有列: {list(df.columns)[:30]}")
+
     def _get_sector_rankings(self, overview: MarketOverview):
         """获取板块涨跌榜"""
         try:
@@ -480,6 +475,9 @@ class MarketAnalyzer:
             
             # 获取行业板块行情
             df = self._call_akshare_with_retry(ak.stock_board_industry_name_em, "行业板块行情", attempts=2)
+            if df is None or df.empty:
+                logger.warning("[大盘] 行业板块为空，尝试概念板块兜底...")
+                df = self._call_akshare_with_retry(ak.stock_board_concept_name_em, "概念板块行情", attempts=2)
             
             if df is not None and not df.empty:
                 change_col = '涨跌幅'
@@ -506,27 +504,35 @@ class MarketAnalyzer:
                     
         except Exception as e:
             logger.error(f"[大盘] 获取板块涨跌榜失败: {e}")
-    
-    # def _get_north_flow(self, overview: MarketOverview):
-    #     """获取北向资金流入"""
-    #     try:
-    #         logger.info("[大盘] 获取北向资金...")
-            
-    #         # 获取北向资金数据
-    #         df = ak.stock_hsgt_north_net_flow_in_em(symbol="北上")
-            
-    #         if df is not None and not df.empty:
-    #             # 取最新一条数据
-    #             latest = df.iloc[-1]
-    #             if '当日净流入' in df.columns:
-    #                 overview.north_flow = float(latest['当日净流入']) / 1e8  # 转为亿元
-    #             elif '净流入' in df.columns:
-    #                 overview.north_flow = float(latest['净流入']) / 1e8
-                    
-    #             logger.info(f"[大盘] 北向资金净流入: {overview.north_flow:.2f}亿")
-                
-    #     except Exception as e:
-    #         logger.warning(f"[大盘] 获取北向资金失败: {e}")
+
+    def _get_north_flow(self, overview: MarketOverview):
+        """获取北向资金流入（失败不影响主流程）"""
+        try:
+            logger.info("[大盘] 获取北向资金...")
+            df = self._call_akshare_with_retry(
+                lambda: ak.stock_hsgt_north_net_flow_in_em(symbol="北上"),
+                "北向资金",
+                attempts=2,
+            )
+
+            if df is None or df.empty:
+                logger.warning("[大盘] 北向资金数据为空")
+                return
+
+            latest = df.iloc[-1]
+            value = None
+            for col in ("当日净流入", "净流入"):
+                if col in df.columns:
+                    value = pd.to_numeric(latest.get(col), errors="coerce")
+                    break
+
+            if pd.notna(value):
+                overview.north_flow = float(value) / 1e8
+                logger.info(f"[大盘] 北向资金净流入: {overview.north_flow:.2f}亿")
+            else:
+                logger.warning(f"[大盘] 北向资金列不匹配，现有列: {list(df.columns)}")
+        except Exception as e:
+            logger.warning(f"[大盘] 获取北向资金失败: {e}")
     
     def search_market_news(self) -> List[Dict]:
         """
@@ -862,3 +868,4 @@ if __name__ == "__main__":
     report = analyzer._generate_template_review(overview, [])
     print(f"\n=== 复盘报告 ===")
     print(report)
+
