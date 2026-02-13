@@ -585,6 +585,12 @@ class MarketAnalyzer:
         else:
             volume_text = f"{overview.total_volume:.0f}（原始单位）"
 
+        if overview.north_flow == 0:
+            north_text = "暂无数据（未启用或接口异常）"
+        else:
+            north_text = f"{overview.north_flow:+.2f} 亿元"
+
+
 
         prompt = f"""你是一位专业的A股市场分析师，请根据以下数据生成一份简洁的大盘复盘报告。
 
@@ -609,7 +615,8 @@ class MarketAnalyzer:
 - 涨停: {overview.limit_up_count} 家 | 跌停: {overview.limit_down_count} 家
 - 两市成交额: {amount_text}
 - 两市成交量: {volume_text}
-- 北向资金: {overview.north_flow:+.2f} 亿元
+- 北向资金: {north_text}
+
 
 ## 量能对比
 {compare_text}
