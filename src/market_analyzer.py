@@ -132,7 +132,7 @@ class MarketAnalyzer:
         self._get_sector_rankings(overview)
         
         # 4. 获取北向资金（可选）
-        # self._get_north_flow(overview)
+         self._get_north_flow(overview)
         
         return overview
 
@@ -494,6 +494,7 @@ class MarketAnalyzer:
 ## 市场概况
 - 上涨: {overview.up_count} 家 | 下跌: {overview.down_count} 家 | 平盘: {overview.flat_count} 家
 - 涨停: {overview.limit_up_count} 家 | 跌停: {overview.limit_down_count} 家
+- 两市成交量: {overview.total_volume:.0f}（原始单位，接口返回可能为手/股）
 - 两市成交额: {overview.total_amount:.0f} 亿元
 - 北向资金: {overview.north_flow:+.2f} 亿元
 
@@ -513,7 +514,7 @@ class MarketAnalyzer:
 ## 📊 {overview.date} 大盘复盘
 
 ### 一、市场总结
-（2-3句话概括今日市场整体表现，包括指数涨跌、成交量变化）
+（2-3句话概括今日市场整体表现，包括指数涨跌、成交量变化,必须包含：指数涨跌 + 两市成交额/成交量是否放大或缩量 + 市场情绪判断）
 
 ### 二、指数点评
 （分析上证、深证、创业板等各指数走势特点）
