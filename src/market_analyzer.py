@@ -380,6 +380,35 @@ class MarketAnalyzer:
                     df = pro.daily(trade_date=today)
                     logger.info(f"[大盘] Tushare daily 获取成功: rows={len(df)}")
                     source = "tushare"
+
+                    if df is None or df.empty:
+                        logger.error("[大盘] Tushare daily 为空，无法统计全市场数据")
+                        return
+                    
+                    # === tushare 字段统计 ===
+                    df["pct_chg"] = pd.to_numeric(df["pct_chg"], errors="coerce")
+                    df["vol"] = pd.to_numeric(df["vol"], errors="coerce")
+                    df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+                    
+                    overview.up_count = int((df["pct_chg"] > 0).sum())
+                    overview.down_count = int((df["pct_chg"] < 0).sum())
+                    overview.flat_count = int((df["pct_chg"] == 0).sum())
+                    
+                    overview.limit_up_count = int((df["pct_chg"] >= 9.9).sum())
+                    overview.limit_down_count = int((df["pct_chg"] <= -9.9).sum())
+                    
+                    overview.total_volume = float(df["vol"].sum())
+                    overview.total_amount = float(df["amount"].sum()) / 1e5   # 千元 -> 亿元 ⚠别忘了单位转换
+                    
+                    logger.info(
+                        f"[大盘] Tushare统计成功: 涨{overview.up_count} "
+                        f"跌{overview.down_count} 成交额≈{overview.total_amount:.0f}亿"
+                    )
+                    
+                    return   # 👈 必须在这里
+
+
+                
                 except Exception as e:
                     logger.error(f"[大盘] Tushare 获取失败: {e}")
                     return
