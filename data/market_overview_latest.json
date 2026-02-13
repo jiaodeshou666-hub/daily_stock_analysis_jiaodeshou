@@ -1,12 +1,12 @@
 {
   "date": "2026-02-13",
-  "total_amount": 0.0,
-  "total_volume": 0.0,
-  "up_count": 0,
-  "down_count": 0,
-  "flat_count": 0,
-  "limit_up_count": 0,
-  "limit_down_count": 0,
+  "total_amount": 19989.416929280003,
+  "total_volume": 1147153303.6399999,
+  "up_count": 1540,
+  "down_count": 3829,
+  "flat_count": 105,
+  "limit_up_count": 40,
+  "limit_down_count": 19,
   "north_flow": 0.0,
   "indices": [
     {
