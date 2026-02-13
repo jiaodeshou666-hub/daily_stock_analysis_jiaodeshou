@@ -376,17 +376,33 @@ class MarketAnalyzer:
                     overview.limit_up_count = len(df[df[change_col] >= 9.9])
                     overview.limit_down_count = len(df[df[change_col] <= -9.9])
                 
+                # 兼容不同版本/接口的列名
+                amount_candidates = ["成交额", "成交额(元)", "成交额（元）", "成交额(万元)", "成交额（万元）"]
+                volume_candidates = ["成交量", "成交量(手)", "成交量（手）", "成交量(股)", "成交量（股）"]
+                
+                amount_col = next((c for c in amount_candidates if c in df.columns), None)
+                volume_col = next((c for c in volume_candidates if c in df.columns), None)
+                
                 # 两市成交额
-                amount_col = '成交额'
-                if amount_col in df.columns:
-                    df[amount_col] = pd.to_numeric(df[amount_col], errors='coerce')
-                    overview.total_amount = df[amount_col].sum() / 1e8  # 转为亿元
-
+                if amount_col:
+                    df[amount_col] = pd.to_numeric(df[amount_col], errors="coerce")
+                    total_amount_raw = df[amount_col].sum()
+                
+                    # 单位修正：如果是“万元”，转成“元”
+                    if "万" in amount_col:
+                        total_amount_raw = total_amount_raw * 1e4
+                
+                    overview.total_amount = total_amount_raw / 1e8  # 元 -> 亿元
+                else:
+                    logger.warning(f"[大盘] 未找到成交额列，现有列: {list(df.columns)[:30]}")
+                
                 # 两市成交量
-                volume_col = '成交量'
-                if volume_col in df.columns:
-                    df[volume_col] = pd.to_numeric(df[volume_col], errors='coerce')
+                if volume_col:
+                    df[volume_col] = pd.to_numeric(df[volume_col], errors="coerce")
                     overview.total_volume = df[volume_col].sum()
+                else:
+                    logger.warning(f"[大盘] 未找到成交量列，现有列: {list(df.columns)[:30]}")
+
 
                 
                 logger.info(f"[大盘] 涨:{overview.up_count} 跌:{overview.down_count} 平:{overview.flat_count} "
