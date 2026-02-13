@@ -143,22 +143,26 @@ class MarketAnalyzer:
         amount_chg = self._pct_change(overview.total_amount, prev_amount)
         volume_chg = self._pct_change(overview.total_volume, prev_volume)
     
-
-
-
-    def fmt(chg: Optional[float]) -> str:
-        if chg is None:
-            return "无法计算"
-        return f"{chg:+.1f}%"
-
-    # 放量/缩量文字
-    vol_word = "放量" if (volume_chg is not None and volume_chg > 0) else "缩量" if (volume_chg is not None and volume_chg < 0) else "持平"
-    amt_word = "放额" if (amount_chg is not None and amount_chg > 0) else "缩额" if (amount_chg is not None and amount_chg < 0) else "持平"
-
-    return (
-        f"与昨日对比：成交量 {vol_word}（{fmt(volume_chg)}），成交额 {amt_word}（{fmt(amount_chg)}）。"
-        f"昨日成交额≈{prev_amount:.0f}亿，昨日成交量≈{prev_volume:.0f}(原始单位)"
-    )
+        def fmt(chg: Optional[float]) -> str:
+            if chg is None:
+                return "无法计算"
+            return f"{chg:+.1f}%"
+    
+        vol_word = (
+            "放量" if (volume_chg is not None and volume_chg > 0)
+            else "缩量" if (volume_chg is not None and volume_chg < 0)
+            else "持平"
+        )
+        amt_word = (
+            "放额" if (amount_chg is not None and amount_chg > 0)
+            else "缩额" if (amount_chg is not None and amount_chg < 0)
+            else "持平"
+        )
+    
+        return (
+            f"与昨日对比：成交量 {vol_word}（{fmt(volume_chg)}），成交额 {amt_word}（{fmt(amount_chg)}）。"
+            f"昨日成交额≈{prev_amount:.0f}亿，昨日成交量≈{prev_volume:.0f}(原始单位)"
+        )
 
 
     
