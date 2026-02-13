@@ -58,6 +58,7 @@ class MarketIndex:
             'open': self.open,
             'high': self.high,
             'low': self.low,
+            'prev_close': self.prev_close,
             'volume': self.volume,
             'amount': self.amount,
             'amplitude': self.amplitude,
