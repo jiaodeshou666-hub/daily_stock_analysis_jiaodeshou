@@ -22,6 +22,9 @@ on:
 concurrency:
   group: stock-analysis
   cancel-in-progress: false
+  
+permissions:
+  contents: write
 
 jobs:
   analyze:
@@ -32,6 +35,9 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+        
+          persist-credentials: true
       
       - name: 设置 Python 环境
         uses: actions/setup-python@v5
@@ -177,6 +183,26 @@ jobs:
           else
             python main.py
           fi
+          
+      - name: 提交大盘缓存（用于次日量能对比）
+        if: always()
+        run: |
+          # 只提交我们需要的缓存文件
+          if [ -f "data/market_overview_latest.json" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            git add data/market_overview_latest.json
+
+            # 没有变更就不提交
+            git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+            git commit -m "chore: update market overview cache"
+            git push
+          else
+            echo "Cache file not found: data/market_overview_latest.json"
+          fi
+
       
       - name: 上传分析报告
         uses: actions/upload-artifact@v4
