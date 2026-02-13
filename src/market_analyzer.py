@@ -23,6 +23,12 @@ import yfinance as yf
 from src.config import get_config
 from src.search_service import SearchService
 
+import json
+from pathlib import Path
+
+DATA_DIR = Path("data")
+LATEST_FILE = DATA_DIR / "market_overview_latest.json"
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,6 +83,24 @@ class MarketOverview:
     top_sectors: List[Dict] = field(default_factory=list)     # 涨幅前5板块
     bottom_sectors: List[Dict] = field(default_factory=list)  # 跌幅前5板块
 
+def overview_to_dict(overview: MarketOverview) -> dict:
+    return {
+        "date": overview.date,
+        "total_amount": overview.total_amount,
+        "total_volume": overview.total_volume,
+        "up_count": overview.up_count,
+        "down_count": overview.down_count,
+        "flat_count": overview.flat_count,
+        "limit_up_count": overview.limit_up_count,
+        "limit_down_count": overview.limit_down_count,
+        "north_flow": overview.north_flow,
+        "indices": [idx.to_dict() for idx in overview.indices],
+        "top_sectors": overview.top_sectors,
+        "bottom_sectors": overview.bottom_sectors,
+    }
+
+
+
 
 class MarketAnalyzer:
     """
@@ -99,6 +123,42 @@ class MarketAnalyzer:
         'sh000016': '上证50',
         'sh000300': '沪深300',
     }
+
+
+
+    def _pct_change(self, today: float, prev: float) -> Optional[float]:
+        
+        if prev is None or prev == 0:
+            return None
+        return (today - prev) / prev * 100
+
+    def _build_volume_amount_compare_text(self, overview: MarketOverview) -> str:
+        prev = self._load_latest_overview()
+        if not prev:
+            return "暂无昨日对比数据（首次运行或历史文件缺失）"
+    
+        prev_amount = float(prev.get("total_amount", 0) or 0)
+        prev_volume = float(prev.get("total_volume", 0) or 0)
+    
+        amount_chg = self._pct_change(overview.total_amount, prev_amount)
+        volume_chg = self._pct_change(overview.total_volume, prev_volume)
+
+    def fmt(chg: Optional[float]) -> str:
+        if chg is None:
+            return "无法计算"
+        return f"{chg:+.1f}%"
+
+    # 放量/缩量文字
+    vol_word = "放量" if (volume_chg is not None and volume_chg > 0) else "缩量" if (volume_chg is not None and volume_chg < 0) else "持平"
+    amt_word = "放额" if (amount_chg is not None and amount_chg > 0) else "缩额" if (amount_chg is not None and amount_chg < 0) else "持平"
+
+    return (
+        f"与昨日对比：成交量 {vol_word}（{fmt(volume_chg)}），成交额 {amt_word}（{fmt(amount_chg)}）。"
+        f"昨日成交额≈{prev_amount:.0f}亿，昨日成交量≈{prev_volume:.0f}(原始单位)"
+    )
+
+
+    
     
     def __init__(self, search_service: Optional[SearchService] = None, analyzer=None):
         """
@@ -472,7 +532,9 @@ class MarketAnalyzer:
                 title = n.get('title', '')[:50]
                 snippet = n.get('snippet', '')[:100]
             news_text += f"{i}. {title}\n   {snippet}\n"
-        
+
+        compare_text = self._build_volume_amount_compare_text(overview)
+
         prompt = f"""你是一位专业的A股市场分析师，请根据以下数据生成一份简洁的大盘复盘报告。
 
 【重要】输出要求：
@@ -497,6 +559,9 @@ class MarketAnalyzer:
 - 两市成交量: {overview.total_volume:.0f}（原始单位，接口返回可能为手/股）
 - 两市成交额: {overview.total_amount:.0f} 亿元
 - 北向资金: {overview.north_flow:+.2f} 亿元
+
+## 量能对比
+{compare_text}
 
 ## 板块表现
 领涨: {top_sectors_text if top_sectors_text else "暂无数据"}
@@ -605,13 +670,20 @@ class MarketAnalyzer:
         
         # 1. 获取市场概览
         overview = self.get_market_overview()
-        
+
+
+        # 保存今日概览（供下次对比）
+        try:
+            self._save_latest_overview(overview)
+        except Exception as e:
+            logger.warning(f"[大盘] 保存今日概览失败: {e}")
+    
         # 2. 搜索市场新闻
         news = self.search_market_news()
         
         # 3. 生成复盘报告
         report = self.generate_market_review(overview, news)
-        
+ 
         logger.info("========== 大盘复盘分析完成 ==========")
         
         return report
