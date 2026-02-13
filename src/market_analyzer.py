@@ -70,6 +70,8 @@ class MarketOverview:
     limit_down_count: int = 0           # 跌停家数
     total_amount: float = 0.0           # 两市成交额（亿元）
     north_flow: float = 0.0             # 北向资金净流入（亿元）
+    total_volume: float = 0.0           # 两市成交量（亿股 或 亿手，取决于数据源单位）
+
     
     # 板块涨幅榜
     top_sectors: List[Dict] = field(default_factory=list)     # 涨幅前5板块
@@ -281,10 +283,20 @@ class MarketAnalyzer:
                 if amount_col in df.columns:
                     df[amount_col] = pd.to_numeric(df[amount_col], errors='coerce')
                     overview.total_amount = df[amount_col].sum() / 1e8  # 转为亿元
+
+                # 两市成交量
+                volume_col = '成交量'
+                if volume_col in df.columns:
+                    df[volume_col] = pd.to_numeric(df[volume_col], errors='coerce')
+                    overview.total_volume = df[volume_col].sum()
+
                 
                 logger.info(f"[大盘] 涨:{overview.up_count} 跌:{overview.down_count} 平:{overview.flat_count} "
                           f"涨停:{overview.limit_up_count} 跌停:{overview.limit_down_count} "
                           f"成交额:{overview.total_amount:.0f}亿")
+
+                logger.info(f"[大盘] 成交量合计: {overview.total_volume:.0f} (原始单位) | 成交额: {overview.total_amount:.0f}亿")
+
                 
         except Exception as e:
             logger.error(f"[大盘] 获取涨跌统计失败: {e}")
