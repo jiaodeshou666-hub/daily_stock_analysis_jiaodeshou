@@ -359,7 +359,8 @@ class MarketAnalyzer:
 
             
             # 获取全部A股实时行情
-            source = "tushare"
+            source = "akshare"
+
 
             df = self._call_akshare_with_retry(ak.stock_zh_a_spot_em, "A股实时行情", attempts=2)
             # akshare 失败/为空 -> tushare 兜底
@@ -377,6 +378,7 @@ class MarketAnalyzer:
             
                 try:
                     df = pro.daily(trade_date=today)
+                    logger.info(f"[大盘] Tushare daily 获取成功: rows={len(df)}")
                     source = "tushare"
                 except Exception as e:
                     logger.error(f"[大盘] Tushare 获取失败: {e}")
@@ -387,13 +389,6 @@ class MarketAnalyzer:
                     return
             
             logger.info(f"[大盘] 市场统计数据源: {source}, rows={len(df)}, columns={list(df.columns)[:15]}")
-            
-            if df is None:
-                logger.error("[大盘] A股实时行情 df=None（接口失败/被限流/网络异常）")
-                return
-            if df.empty:
-                logger.error("[大盘] A股实时行情 df.empty=True（接口返回空）")
-                return
             
             logger.info(f"[大盘] A股实时行情行列: {df.shape}, columns={list(df.columns)[:15]}")
 
