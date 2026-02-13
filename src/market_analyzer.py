@@ -142,6 +142,28 @@ class MarketAnalyzer:
     
         amount_chg = self._pct_change(overview.total_amount, prev_amount)
         volume_chg = self._pct_change(overview.total_volume, prev_volume)
+    
+        def fmt(chg: Optional[float]) -> str:
+            if chg is None:
+                return "无法计算"
+            return f"{chg:+.1f}%"
+    
+        vol_word = (
+            "放量" if (volume_chg is not None and volume_chg > 0)
+            else "缩量" if (volume_chg is not None and volume_chg < 0)
+            else "持平"
+        )
+        amt_word = (
+            "放额" if (amount_chg is not None and amount_chg > 0)
+            else "缩额" if (amount_chg is not None and amount_chg < 0)
+            else "持平"
+        )
+    
+        return (
+            f"与昨日对比：成交量 {vol_word}（{fmt(volume_chg)}），成交额 {amt_word}（{fmt(amount_chg)}）。"
+            f"昨日成交额≈{prev_amount:.0f}亿，昨日成交量≈{prev_volume:.0f}(原始单位)"
+        )
+
 
     def fmt(chg: Optional[float]) -> str:
         if chg is None:
@@ -171,6 +193,27 @@ class MarketAnalyzer:
         self.config = get_config()
         self.search_service = search_service
         self.analyzer = analyzer
+
+    def _load_latest_overview(self) -> Optional[dict]:
+    try:
+        if LATEST_FILE.exists():
+            return json.loads(LATEST_FILE.read_text(encoding="utf-8"))
+    except Exception as e:
+        logger.warning(f"[大盘] 读取昨日概览失败: {e}")
+    return None
+    
+    def _save_latest_overview(self, overview: MarketOverview) -> None:
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            payload = overview_to_dict(overview)
+            LATEST_FILE.write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            logger.info(f"[大盘] 已保存今日概览: {LATEST_FILE}")
+        except Exception as e:
+            logger.warning(f"[大盘] 保存今日概览失败: {e}")
+
         
     def get_market_overview(self) -> MarketOverview:
         """
@@ -192,7 +235,7 @@ class MarketAnalyzer:
         self._get_sector_rankings(overview)
         
         # 4. 获取北向资金（可选）
-         self._get_north_flow(overview)
+        #self._get_north_flow(overview)
         
         return overview
 
