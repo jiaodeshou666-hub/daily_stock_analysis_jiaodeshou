@@ -353,6 +353,15 @@ class MarketAnalyzer:
             
             # 获取全部A股实时行情
             df = self._call_akshare_with_retry(ak.stock_zh_a_spot_em, "A股实时行情", attempts=2)
+
+            if df is None:
+                logger.error("[大盘] A股实时行情 df=None（接口失败/被限流/网络异常）")
+                return
+            if df.empty:
+                logger.error("[大盘] A股实时行情 df.empty=True（接口返回空）")
+                return
+            
+            logger.info(f"[大盘] A股实时行情行列: {df.shape}, columns={list(df.columns)[:15]}")
             
             if df is not None and not df.empty:
                 # 涨跌统计
@@ -564,6 +573,19 @@ class MarketAnalyzer:
 
         compare_text = self._build_volume_amount_compare_text(overview)
 
+                # 处理成交额显示
+        if overview.total_amount == 0:
+            amount_text = "暂无数据（接口异常或未获取到数据）"
+        else:
+            amount_text = f"{overview.total_amount:.0f} 亿元"
+        
+        # 处理成交量显示
+        if overview.total_volume == 0:
+            volume_text = "暂无数据（接口异常或未获取到数据）"
+        else:
+            volume_text = f"{overview.total_volume:.0f}（原始单位）"
+
+
         prompt = f"""你是一位专业的A股市场分析师，请根据以下数据生成一份简洁的大盘复盘报告。
 
 【重要】输出要求：
@@ -586,7 +608,8 @@ class MarketAnalyzer:
 - 上涨: {overview.up_count} 家 | 下跌: {overview.down_count} 家 | 平盘: {overview.flat_count} 家
 - 涨停: {overview.limit_up_count} 家 | 跌停: {overview.limit_down_count} 家
 - 两市成交量: {overview.total_volume:.0f}（原始单位，接口返回可能为手/股）
-- 两市成交额: {overview.total_amount:.0f} 亿元
+- 两市成交额: {amount_text}
+- 两市成交量: {volume_text}
 - 北向资金: {overview.north_flow:+.2f} 亿元
 
 ## 量能对比
