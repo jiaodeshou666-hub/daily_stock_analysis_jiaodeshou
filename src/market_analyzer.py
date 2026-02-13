@@ -664,7 +664,7 @@ class MarketAnalyzer:
         """使用模板生成复盘报告（无大模型时的备选方案）"""
         
         # 判断市场走势
-        sh_index = next((idx for idx in overview.indices if idx.code == '000001'), None)
+        sh_index = next((idx for idx in overview.indices if idx.code == 'sh000001'), None)
         if sh_index:
             if sh_index.change_pct > 1:
                 market_mood = "强势上涨"
@@ -686,6 +686,19 @@ class MarketAnalyzer:
         # 板块信息
         top_text = "、".join([s['name'] for s in overview.top_sectors[:3]])
         bottom_text = "、".join([s['name'] for s in overview.bottom_sectors[:3]])
+        
+        # 处理成交额显示
+        if overview.total_amount == 0:
+            amount_text = "暂无数据（接口异常或未获取到数据）"
+        else:
+            amount_text = f"{overview.total_amount:.0f}亿"
+        
+        # 处理北向资金显示
+        if overview.north_flow == 0:
+            north_text = "暂无数据（未启用或接口异常）"
+        else:
+            north_text = f"{overview.north_flow:+.2f}亿"
+
         
         report = f"""## 📊 {overview.date} 大盘复盘
 
