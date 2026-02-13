@@ -378,12 +378,14 @@ class MarketAnalyzer:
             
                 try:
                     df = pro.daily(trade_date=today)
-                    logger.info(f"[大盘] Tushare daily 获取成功: rows={len(df)}")
                     source = "tushare"
-
+                    
                     if df is None or df.empty:
                         logger.error("[大盘] Tushare daily 为空，无法统计全市场数据")
                         return
+                    
+                    logger.info(f"[大盘] Tushare daily 获取成功: rows={len(df)}")
+
                     
                     # === tushare 字段统计 ===
                     df["pct_chg"] = pd.to_numeric(df["pct_chg"], errors="coerce")
