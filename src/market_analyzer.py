@@ -359,6 +359,8 @@ class MarketAnalyzer:
 
             
             # 获取全部A股实时行情
+            source = "tushare"
+
             df = self._call_akshare_with_retry(ak.stock_zh_a_spot_em, "A股实时行情", attempts=2)
             # akshare 失败/为空 -> tushare 兜底
             if df is None or df.empty:
@@ -394,7 +396,29 @@ class MarketAnalyzer:
                 return
             
             logger.info(f"[大盘] A股实时行情行列: {df.shape}, columns={list(df.columns)[:15]}")
+
+
+            if source == "tushare":
+                # 涨跌统计（pct_chg）
+                df["pct_chg"] = pd.to_numeric(df["pct_chg"], errors="coerce")
+                overview.up_count = int((df["pct_chg"] > 0).sum())
+                overview.down_count = int((df["pct_chg"] < 0).sum())
+                overview.flat_count = int((df["pct_chg"] == 0).sum())
             
+                # 成交额 amount：千元 -> 亿元（/1e5）
+                df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+                overview.total_amount = float(df["amount"].sum()) / 1e5
+            
+                # 成交量 vol：手
+                df["vol"] = pd.to_numeric(df["vol"], errors="coerce")
+                overview.total_volume = float(df["vol"].sum())
+            
+                logger.info(
+                    f"[大盘] Tushare统计: 涨{overview.up_count} 跌{overview.down_count} 平{overview.flat_count} "
+                    f"成交额:{overview.total_amount:.0f}亿 成交量:{overview.total_volume:.0f}手"
+                )
+                return
+
             if df is not None and not df.empty:
                 # 涨跌统计
                 change_col = '涨跌幅'
