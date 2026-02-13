@@ -26,6 +26,12 @@ from src.search_service import SearchService
 import json
 from pathlib import Path
 
+import tushare as ts
+import os
+
+
+
+
 DATA_DIR = Path("data")
 LATEST_FILE = DATA_DIR / "market_overview_latest.json"
 
@@ -350,10 +356,36 @@ class MarketAnalyzer:
         """获取市场涨跌统计"""
         try:
             logger.info("[大盘] 获取市场涨跌统计...")
+
             
             # 获取全部A股实时行情
             df = self._call_akshare_with_retry(ak.stock_zh_a_spot_em, "A股实时行情", attempts=2)
-
+            # akshare 失败/为空 -> tushare 兜底
+            if df is None or df.empty:
+                logger.warning("[大盘] akshare 失败/为空，尝试使用 Tushare...")
+            
+                token = os.getenv("TUSHARE_TOKEN")
+                if not token:
+                    logger.error("[大盘] 未配置 TUSHARE_TOKEN")
+                    return
+            
+                ts.set_token(token)
+                pro = ts.pro_api()
+                today = overview.date.replace("-", "")
+            
+                try:
+                    df = pro.daily(trade_date=today)
+                    source = "tushare"
+                except Exception as e:
+                    logger.error(f"[大盘] Tushare 获取失败: {e}")
+                    return
+            
+                if df is None or df.empty:
+                    logger.error("[大盘] Tushare daily 为空，无法统计全市场数据")
+                    return
+            
+            logger.info(f"[大盘] 市场统计数据源: {source}, rows={len(df)}, columns={list(df.columns)[:15]}")
+            
             if df is None:
                 logger.error("[大盘] A股实时行情 df=None（接口失败/被限流/网络异常）")
                 return
