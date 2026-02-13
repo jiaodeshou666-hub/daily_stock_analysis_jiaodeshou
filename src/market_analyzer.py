@@ -607,7 +607,6 @@ class MarketAnalyzer:
 ## 市场概况
 - 上涨: {overview.up_count} 家 | 下跌: {overview.down_count} 家 | 平盘: {overview.flat_count} 家
 - 涨停: {overview.limit_up_count} 家 | 跌停: {overview.limit_down_count} 家
-- 两市成交量: {overview.total_volume:.0f}（原始单位，接口返回可能为手/股）
 - 两市成交额: {amount_text}
 - 两市成交量: {volume_text}
 - 北向资金: {overview.north_flow:+.2f} 亿元
