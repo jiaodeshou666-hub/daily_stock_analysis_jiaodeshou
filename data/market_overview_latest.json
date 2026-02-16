@@ -1,10 +1,10 @@
 {
-  "date": "2026-02-13",
-  "total_amount": 19989.416929280003,
-  "total_volume": 1147153303.6399999,
+  "date": "2026-02-16",
+  "total_amount": 19989.416930543397,
+  "total_volume": 1147153329.0,
   "up_count": 1540,
   "down_count": 3829,
-  "flat_count": 105,
+  "flat_count": 106,
   "limit_up_count": 40,
   "limit_down_count": 19,
   "north_flow": 0.0,
@@ -94,6 +94,48 @@
       "amplitude": 0.9583356817071391
     }
   ],
-  "top_sectors": [],
-  "bottom_sectors": []
+  "top_sectors": [
+    {
+      "name": "其他数字媒体",
+      "change_pct": 5.0
+    },
+    {
+      "name": "海洋捕捞",
+      "change_pct": 4.22
+    },
+    {
+      "name": "航海装备Ⅲ",
+      "change_pct": 3.99
+    },
+    {
+      "name": "航海装备Ⅱ",
+      "change_pct": 3.99
+    },
+    {
+      "name": "文字媒体",
+      "change_pct": 3.83
+    }
+  ],
+  "bottom_sectors": [
+    {
+      "name": "通信线缆及配套",
+      "change_pct": -4.97
+    },
+    {
+      "name": "稀土",
+      "change_pct": -4.47
+    },
+    {
+      "name": "钨",
+      "change_pct": -3.9
+    },
+    {
+      "name": "长材",
+      "change_pct": -3.86
+    },
+    {
+      "name": "钴",
+      "change_pct": -3.69
+    }
+  ]
 }
