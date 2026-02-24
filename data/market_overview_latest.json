@@ -1,141 +1,99 @@
 {
-  "date": "2026-02-23",
-  "total_amount": 19989.416930543397,
-  "total_volume": 1147153329.0,
-  "up_count": 1540,
-  "down_count": 3829,
-  "flat_count": 106,
-  "limit_up_count": 40,
-  "limit_down_count": 19,
+  "date": "2026-02-24",
+  "total_amount": 22181.607221960003,
+  "total_volume": 1284608920.4499998,
+  "up_count": 4006,
+  "down_count": 1392,
+  "flat_count": 76,
+  "limit_up_count": 121,
+  "limit_down_count": 35,
   "north_flow": 0.0,
   "indices": [
     {
       "code": "sh000001",
       "name": "上证指数",
-      "current": 4082.0726,
-      "change": -51.945,
-      "change_pct": -1.257,
-      "open": 4115.9243,
-      "high": 4123.8443,
-      "low": 4079.7702,
-      "prev_close": 4134.0178,
-      "volume": 500799472.0,
-      "amount": 846808337462.0,
-      "amplitude": 1.0661323228942028
+      "current": 4117.4089,
+      "change": 35.336,
+      "change_pct": 0.866,
+      "open": 4129.1338,
+      "high": 4131.5499,
+      "low": 4105.9369,
+      "prev_close": 4082.0726,
+      "volume": 566322249.0,
+      "amount": 938611376000.0,
+      "amplitude": 0.6274508689531951
     },
     {
       "code": "sz399001",
       "name": "深证成指",
-      "current": 14100.189,
-      "change": -182.809,
-      "change_pct": -1.28,
-      "open": 14188.347,
-      "high": 14258.826,
-      "low": 14092.84,
-      "prev_close": 14282.998,
-      "volume": 64063961614.0,
-      "amount": 1135871601132.0,
-      "amplitude": 1.1621229660607597
+      "current": 14291.565,
+      "change": 191.376,
+      "change_pct": 1.357,
+      "open": 14313.862,
+      "high": 14376.957,
+      "low": 14214.415,
+      "prev_close": 14100.189,
+      "volume": 71242598997.0,
+      "amount": 1263450465547.0,
+      "amplitude": 1.1527646898917414
     },
     {
       "code": "sz399006",
       "name": "创业板指",
-      "current": 3275.958,
-      "change": -52.105,
-      "change_pct": -1.566,
-      "open": 3309.429,
-      "high": 3323.369,
-      "low": 3275.289,
-      "prev_close": 3328.063,
-      "volume": 20624958923.0,
-      "amount": 542116866541.0,
-      "amplitude": 1.4446841901730805
+      "current": 3308.265,
+      "change": 32.307,
+      "change_pct": 0.986,
+      "open": 3331.795,
+      "high": 3343.244,
+      "low": 3292.5,
+      "prev_close": 3275.958,
+      "volume": 22240405558.0,
+      "amount": 593352962910.0,
+      "amplitude": 1.5489820077058418
     },
     {
       "code": "sh000688",
       "name": "科创50",
-      "current": 1470.3333,
-      "change": -10.661,
-      "change_pct": -0.72,
-      "open": 1470.2588,
-      "high": 1492.0864,
-      "low": 1466.7068,
-      "prev_close": 1480.9946,
-      "volume": 9896616.0,
-      "amount": 61592827654.0,
-      "amplitude": 1.713686194399357
+      "current": 1465.365,
+      "change": -4.968,
+      "change_pct": -0.338,
+      "open": 1493.4525,
+      "high": 1493.7742,
+      "low": 1453.5502,
+      "prev_close": 1470.3333,
+      "volume": 10295969.0,
+      "amount": 68936003468.0,
+      "amplitude": 2.7357062510928754
     },
     {
       "code": "sh000016",
       "name": "上证50",
-      "current": 3034.3459,
-      "change": -45.381,
-      "change_pct": -1.474,
-      "open": 3062.206,
-      "high": 3066.039,
-      "low": 3032.6561,
-      "prev_close": 3079.7273,
-      "volume": 45953549.0,
-      "amount": 125965616371.0,
-      "amplitude": 1.083956361980493
+      "current": 3041.3242,
+      "change": 6.978,
+      "change_pct": 0.23,
+      "open": 3075.4717,
+      "high": 3075.8973,
+      "low": 3039.4088,
+      "prev_close": 3034.3459,
+      "volume": 43898842.0,
+      "amount": 128242969782.0,
+      "amplitude": 1.2025161666637918
     },
     {
       "code": "sh000300",
       "name": "沪深300",
-      "current": 4660.4056,
-      "change": -59.172,
-      "change_pct": -1.254,
-      "open": 4693.4106,
-      "high": 4703.6332,
-      "low": 4658.4038,
-      "prev_close": 4719.578,
-      "volume": 189167756.0,
-      "amount": 452878594069.0,
-      "amplitude": 0.9583356817071391
+      "current": 4707.544,
+      "change": 47.138,
+      "change_pct": 1.011,
+      "open": 4727.2961,
+      "high": 4727.373,
+      "low": 4698.3488,
+      "prev_close": 4660.4056,
+      "volume": 218488890.0,
+      "amount": 526084235584.0,
+      "amplitude": 0.6227827037200332
     }
   ],
-  "top_sectors": [
-    {
-      "name": "其他数字媒体",
-      "change_pct": 5.0
-    },
-    {
-      "name": "海洋捕捞",
-      "change_pct": 4.22
-    },
-    {
-      "name": "航海装备Ⅲ",
-      "change_pct": 3.99
-    },
-    {
-      "name": "航海装备Ⅱ",
-      "change_pct": 3.99
-    },
-    {
-      "name": "文字媒体",
-      "change_pct": 3.83
-    }
-  ],
-  "bottom_sectors": [
-    {
-      "name": "通信线缆及配套",
-      "change_pct": -4.97
-    },
-    {
-      "name": "稀土",
-      "change_pct": -4.47
-    },
-    {
-      "name": "钨",
-      "change_pct": -3.9
-    },
-    {
-      "name": "长材",
-      "change_pct": -3.86
-    },
-    {
-      "name": "钴",
-      "change_pct": -3.69
-    }
-  ]
+  "top_sectors": [],
+  "bottom_sectors": []
 }
