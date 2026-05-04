@@ -1,12 +1,12 @@
 {
-  "date": "2026-05-01",
-  "total_amount": 0.0,
-  "total_volume": 0.0,
-  "up_count": 0,
-  "down_count": 0,
-  "flat_count": 0,
-  "limit_up_count": 0,
-  "limit_down_count": 0,
+  "date": "2026-05-04",
+  "total_amount": 27592.246381780802,
+  "total_volume": 1401827922.0,
+  "up_count": 2878,
+  "down_count": 2461,
+  "flat_count": 125,
+  "limit_up_count": 118,
+  "limit_down_count": 30,
   "north_flow": 0.0,
   "indices": [
     {
@@ -94,6 +94,48 @@
       "amplitude": 0.6595574356509983
     }
   ],
-  "top_sectors": [],
-  "bottom_sectors": []
+  "top_sectors": [
+    {
+      "name": "燃料电池",
+      "change_pct": 9.46
+    },
+    {
+      "name": "集成电路制造",
+      "change_pct": 6.56
+    },
+    {
+      "name": "体育Ⅲ",
+      "change_pct": 6.43
+    },
+    {
+      "name": "体育Ⅱ",
+      "change_pct": 6.43
+    },
+    {
+      "name": "图片媒体",
+      "change_pct": 5.21
+    }
+  ],
+  "bottom_sectors": [
+    {
+      "name": "蓄电池及其他电池",
+      "change_pct": -5.45
+    },
+    {
+      "name": "玻纤制造",
+      "change_pct": -3.22
+    },
+    {
+      "name": "房地产综合服务",
+      "change_pct": -2.83
+    },
+    {
+      "name": "光伏发电",
+      "change_pct": -2.56
+    },
+    {
+      "name": "餐饮",
+      "change_pct": -2.56
+    }
+  ]
 }
