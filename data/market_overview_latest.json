@@ -1,12 +1,12 @@
 {
-  "date": "2026-06-18",
-  "total_amount": 33317.1901316708,
-  "total_volume": 1430448538.15,
-  "up_count": 2023,
-  "down_count": 3395,
-  "flat_count": 89,
-  "limit_up_count": 131,
-  "limit_down_count": 21,
+  "date": "2026-06-19",
+  "total_amount": 0.0,
+  "total_volume": 0.0,
+  "up_count": 0,
+  "down_count": 0,
+  "flat_count": 0,
+  "limit_up_count": 0,
+  "limit_down_count": 0,
   "north_flow": 0.0,
   "indices": [
     {
