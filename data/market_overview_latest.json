@@ -1,12 +1,12 @@
 {
-  "date": "2026-09-24",
-  "total_amount": 16691.122742519998,
-  "total_volume": 971566502.09,
-  "up_count": 1120,
-  "down_count": 4306,
-  "flat_count": 131,
-  "limit_up_count": 65,
-  "limit_down_count": 22,
+  "date": "2026-09-25",
+  "total_amount": 0.0,
+  "total_volume": 0.0,
+  "up_count": 0,
+  "down_count": 0,
+  "flat_count": 0,
+  "limit_up_count": 0,
+  "limit_down_count": 0,
   "north_flow": 0.0,
   "indices": [
     {
